@@ -10,6 +10,8 @@ import './assets/css/global.css'
 // 导入字体图标
 import './assets/fonts/iconfont.css'
 
+window.router = router
+
 const app = createApp(App)
 installElementPlus(app)
 app.config.globalProperties.$api = api
