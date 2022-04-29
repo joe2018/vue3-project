@@ -1,11 +1,16 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Login from '../components/myLogin.vue'
 
 const routes = [
   {
+    // 重定向
     path: '/',
-    name: 'home',
-    component: HomeView
+    redirect: '/login'
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login
   },
   {
     path: '/about',
