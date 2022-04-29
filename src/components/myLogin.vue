@@ -43,6 +43,7 @@
 import { Avatar, Lock } from '@element-plus/icons'
 import { reactive, ref } from 'vue'
 import api from '@/axios/config'
+import router from '@/router'
 
 const { ElMessage } = require('element-plus')
 
@@ -75,6 +76,7 @@ const submitForm = (formEl) => {
         type: 'success'
       })
       window.sessionStorage.setItem('token', res.data.token)
+      router.push('/home')
     } else {
       ElMessage.error('提交错误')
     }
