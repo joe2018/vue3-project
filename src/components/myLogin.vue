@@ -42,8 +42,9 @@
 <script setup>
 import { Avatar, Lock } from '@element-plus/icons'
 import { reactive, ref } from 'vue'
-import axios from 'axios'
 import api from '@/axios/config'
+
+const { ElMessage } = require('element-plus')
 
 const loginFormRef = ref('')
 
@@ -63,14 +64,19 @@ const loginFormRules = {
   ]
 }
 
-const submitForm = async (formEl) => {
+const submitForm = (formEl) => {
   if (!formEl) return
-  await formEl.validate((valid, fields) => {
+  formEl.validate(async (valid, fields) => {
     if (valid) {
-      // const res = this.ios.post('login', form)
-      console.log(res)
+      const { data: res } = await api.post('login', form)
+      if (res.meta.status !== 200) return ElMessage.error('用户名或密码错误')
+      ElMessage({
+        message: '登入成功',
+        type: 'success'
+      })
+      window.sessionStorage.setItem('token', res.data.token)
     } else {
-      console.log('error submit', fields)
+      ElMessage.error('提交错误')
     }
   })
 }
