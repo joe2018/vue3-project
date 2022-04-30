@@ -1,4 +1,5 @@
 import axios from 'axios'
+import router from '@/router'
 
 const config = {
   baseUrl: 'http://127.0.0.1:8888/api/private/v1/',
@@ -33,29 +34,64 @@ api.post = function (url, params) {
     })
   })
 }
-// http response 拦截器
+
+// 响应拦截器
 api.interceptors.response.use(
   response => {
-    // 拦截响应，做统一处理
-    if (response.data.code) {
-      // console.log(response.status);
-      switch (response.status) {
-        case 301:
-          console.log('登录过期')
-        // store.state.isLogin = false
-        // router.replace({
-        //   path: 'login',
-        //   query: {
-        //     redirect: router.currentRoute.fullPath
-        //   }
-        // })
-      }
-    }
+    // 对响应数据做一些事情
     return response
   },
-  // 接口错误状态处理，也就是说无响应时的处理
   error => {
-    return Promise.reject(error.response.status) // 返回接口返回的错误信息
+    // 请求错误时做些事
+    let status = ''
+    if (error.request) {
+      status = error.request
+    } else if (error.response) {
+      status = error.response
+    }
+    if (status) {
+      switch (status.status) {
+        case 400:
+          error.message = '请求错误(400)'
+          break
+        case 401:
+          error.message = '未授权，请重新登录(401)'
+          router.push('/401')
+          break
+        case 403:
+          error.message = '拒绝访问(403)'
+          break
+        case 404:
+          error.message = '请求出错(404)'
+          break
+        case 408:
+          error.message = '请求超时(408)'
+          break
+        case 500:
+          error.message = '服务器错误(500)'
+          break
+        case 501:
+          error.message = '服务未实现(501)'
+          break
+        case 502:
+          error.message = '网络错误(502)'
+          break
+        case 503:
+          error.message = '服务不可用(503)'
+          break
+        case 504:
+          error.message = '网络超时(504)'
+          break
+        case 505:
+          error.message = 'HTTP版本不受支持(505)'
+          break
+        default:
+          error.message = `连接出错(${error.response.status})!`
+      }
+    } else {
+      error.message = '连接服务器失败!'
+    }
+    return Promise.reject(error)
   })
 
 export default api

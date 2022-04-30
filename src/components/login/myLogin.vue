@@ -3,7 +3,7 @@
     <div class="login_box">
 <!--      图表区域-->
       <div class="avatar_box">
-        <img src="../assets/logo.png" alt="">
+        <img src="../../assets/logo.png" alt="">
       </div>
       <div class="login_title">大数据系统管理平台</div>
 <!--      登入表单区域-->
@@ -50,8 +50,8 @@ const { ElMessage } = require('element-plus')
 const loginFormRef = ref('')
 
 const form = reactive({
-  username: '',
-  password: ''
+  username: 'admin',
+  password: '123456'
 })
 
 const loginFormRules = {
@@ -76,7 +76,7 @@ const submitForm = (formEl) => {
         type: 'success'
       })
       window.sessionStorage.setItem('token', res.data.token)
-      router.push('/home')
+      await router.push('/home')
     } else {
       ElMessage.error('提交错误')
     }
@@ -94,7 +94,7 @@ const resetLoginForm = (formEl) => {
 
 .login_container{
   height: 100%;
-  background-image: url("../assets/bg.57383432.png");
+  background-image: url("../../assets/bg.57383432.png");
 }
 .login_box{
   width: 385px;
