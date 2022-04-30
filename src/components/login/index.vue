@@ -5,7 +5,7 @@
       <div class="avatar_box">
         <img src="../../assets/logo.png" alt="">
       </div>
-      <div class="login_title">大数据系统管理平台</div>
+      <div class="login_title">供应链电商管理平台</div>
 <!--      登入表单区域-->
       <el-form ref="loginFormRef" :model="form" :rules="loginFormRules" class="login_form">
 <!--        用户名-->
@@ -40,10 +40,8 @@
 </template>
 
 <script setup>
-import { Avatar, Lock } from '@element-plus/icons'
 import { reactive, ref } from 'vue'
 import api from '@/axios/config'
-import router from '@/router'
 
 const { ElMessage } = require('element-plus')
 
@@ -76,7 +74,7 @@ const submitForm = (formEl) => {
         type: 'success'
       })
       window.sessionStorage.setItem('token', res.data.token)
-      await router.push('/home')
+      await window.router.push('/home')
     } else {
       ElMessage.error('提交错误')
     }
