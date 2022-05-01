@@ -26,7 +26,7 @@
         <el-table-column prop="role_name" label="角色" />
         <el-table-column label="状态" >
           <template v-slot="scope">
-            <el-switch v-model="scope.row.mg_state" />
+            <el-switch v-model="scope.row.mg_state" @change="userStateChanged(scope.row)"/>
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="180">
@@ -76,7 +76,7 @@
 
 <script setup>
 import { Search, Edit, Delete, Setting } from '@element-plus/icons'
-import { ref, reactive, shallowRef } from 'vue'
+import { ref, reactive } from 'vue'
 import axios from 'axios'
 const { ElMessage } = require('element-plus')
 
@@ -90,15 +90,24 @@ const total = ref(0)
 const queryInfo = reactive({
   query: '',
   pagenum: 1,
-  pagesize: 1
+  pagesize: 3
 })
 onBeforeMount(() => {
   getUserList()
 })
 
+const userStateChanged = async (userinfo) => {
+  const { data: res } = await axios.put(`users/${userinfo.id}/state/${userinfo.mg_state}`)
+  if (res.meta.status !== 200) {
+    userinfo.mg_state = !userinfo.mg_state
+    return ElMessage.error('更新状态失败！')
+  }
+  ElMessage.success('更新状态成功！')
+}
+
 const getUserList = async () => {
   const { data: res } = await axios.get('users', { params: queryInfo })
-  if (res.meta.status !== 200) return ElMessage.error('获取用户数据错误')
+  if (res.meta.status !== 200) return ElMessage.error('获取用户数据错误！')
   usersList.value = res.data.users
   total.value = res.data.total
 }
