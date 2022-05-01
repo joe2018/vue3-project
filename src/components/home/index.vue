@@ -16,6 +16,7 @@
             :unique-opened="true"
             :collapse="isCollapse"
             :collapse-transition="false"
+            :router="true"
           >
             <el-sub-menu :index="item.id + ''" v-for="item in meunsList" :key="item.id">
               <template #title>
@@ -24,7 +25,7 @@
                 </el-icon>
                 <span>{{ item.authName }}</span>
               </template>
-                <el-menu-item :index="subitem.id + ''" v-for="subitem in item.children" :key="subitem.id">
+                <el-menu-item :index="'/'+subitem.path" v-for="subitem in item.children" :key="subitem.id">
                   <template #title>
                     <el-icon><IconMenu /></el-icon>
                     <span>{{ subitem.authName }}</span>
