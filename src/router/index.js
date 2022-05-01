@@ -26,10 +26,20 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.path === '/login') return next()
-  const tokenStr = window.sessionStorage.getItem('token')
-  if (!tokenStr) return next('/login')
-  next()
+  if (to.fullPath === '/login') {
+    if (window.sessionStorage.getItem('token')) {
+      next(from.fullPath)
+    } else {
+      next()
+    }
+  } else {
+    if (window.sessionStorage.getItem('token')) {
+      next()
+    } else {
+      next({
+        path: from.fullPath
+      })
+    }
+  }
 })
-
 export default router

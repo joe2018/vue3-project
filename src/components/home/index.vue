@@ -7,21 +7,24 @@
         </div>
         <div>
           <el-menu
-            active-text-color="#ffd04b"
+            active-text-color="#409eff"
             background-color="#304156"
             class="el-menu-vertical-demo"
             default-active="2"
             text-color="#fff"
+            unique-opened="true"
           >
-            <el-sub-menu index="1" :model="meunsList" v-for="item in meunsList" :key="item.id">
+            <el-sub-menu :index="item.id + ''" v-for="item in meunsList" :key="item.id">
               <template #title>
-                <el-icon><location /></el-icon>
-                <span>导航一</span>
+                <el-icon>
+                  <component :is="iconObj[item.id]" />
+                </el-icon>
+                <span>{{ item.authName }}</span>
               </template>
-                <el-menu-item index="1-1">
+                <el-menu-item :index="subitem.id + ''" v-for="subitem in item.children" :key="subitem.id">
                   <template #title>
-                    <el-icon><location /></el-icon>
-                    <span>导航</span>
+                    <el-icon><IconMenu /></el-icon>
+                    <span>{{ subitem.authName }}</span>
                   </template>
                 </el-menu-item>
             </el-sub-menu>
@@ -40,29 +43,39 @@
 </template>
 
 <script setup>
-import {
-  Document,
-  Menu as IconMenu,
-  Location,
-  Setting
-} from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import {
+  Avatar,
+  Checked,
+  Goods,
+  List,
+  PieChart,
+  Menu as IconMenu
+} from '@element-plus/icons-vue'
+
 import axios from 'axios'
+
 const {
-  onBeforeMount,
+  onBeforeMount
 } = require('vue')
 
 const meunsList = ref([])
+const iconObj = ref({
+  125: Avatar,
+  103: Checked,
+  101: Goods,
+  102: List,
+  145: PieChart
+})
 
-onBeforeMount(() => {
-  getMenuList()
+onBeforeMount(async () => {
+  meunsList.value = await getMenuList()
 })
 
 const getMenuList = async () => {
   const { data: res } = await axios.get('Menus')
   if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-  meunsList = res.data
-  console.log(meunsList)
+  return res.data
 }
 
 const logout = () => {
@@ -94,8 +107,10 @@ const logout = () => {
     }
     span{
       color: #f1f1f1;
-
   }}
+  .el-menu{
+    border-right: none;
+  }
 }
 
 .el-main{

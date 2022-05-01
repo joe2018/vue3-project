@@ -40,6 +40,10 @@
 </template>
 
 <script setup>
+import {
+  Lock,
+  Avatar
+} from '@element-plus/icons-vue'
 import { reactive, ref } from 'vue'
 import axios from 'axios'
 
