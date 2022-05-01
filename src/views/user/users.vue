@@ -10,9 +10,16 @@
       <el-row :gutter="10">
         <el-col :span="6"><div class="grid-content bg-purple" />
           <el-input
-            placeholder="Please Input"
-            :prefix-icon="Search"
-          />
+            v-model="queryInfo.query"
+            placeholder="Please input"
+            class="input-with-select"
+            @change="searchChange()"
+            :clearable="true"
+          >
+            <template #prepend>
+              <el-button :icon="Search" @click="getUserList"/>
+            </template>
+          </el-input>
         </el-col>
         <el-col :span="4"><div class="grid-content bg-purple" />
           <el-button type="primary">添加用户</el-button>
@@ -119,6 +126,10 @@ const handleCurrentChange = (newPage) => {
 
 const handleSizeChange = (newSize) => {
   queryInfo.pagesize = newSize
+  getUserList()
+}
+
+const searchChange = () => {
   getUserList()
 }
 
