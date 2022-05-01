@@ -11,7 +11,7 @@
             active-text-color="#409eff"
             background-color="#304156"
             class="el-menu-vertical-demo"
-            default-active="2"
+            :default-active="defactivePath"
             text-color="#fff"
             :unique-opened="true"
             :collapse="isCollapse"
@@ -25,7 +25,7 @@
                 </el-icon>
                 <span>{{ item.authName }}</span>
               </template>
-                <el-menu-item :index="'/'+subitem.path" v-for="subitem in item.children" :key="subitem.id">
+                <el-menu-item :index="'/'+subitem.path" v-for="subitem in item.children" :key="subitem.id" @click="saveNavstate('/'+subitem.path)">
                   <template #title>
                     <el-icon><IconMenu /></el-icon>
                     <span>{{ subitem.authName }}</span>
@@ -71,7 +71,7 @@ const iconObj = shallowRef({
   102: List,
   145: PieChart
 })
-
+const defactivePath = ref('')
 const isCollapse = ref(false)
 
 const toggleCollapse = () => {
@@ -80,6 +80,7 @@ const toggleCollapse = () => {
 
 onBeforeMount(async () => {
   meunsList.value = await getMenuList()
+  defactivePath.value = window.sessionStorage.getItem('activePath')
 })
 
 const getMenuList = async () => {
@@ -88,6 +89,10 @@ const getMenuList = async () => {
   return res.data
 }
 
+const saveNavstate = (activePath) => {
+  window.sessionStorage.setItem('activePath', activePath)
+  defactivePath.value = activePath
+}
 const logout = () => {
   window.sessionStorage.clear()
   window.router.push('/login')
