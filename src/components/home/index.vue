@@ -13,35 +13,18 @@
             default-active="2"
             text-color="#fff"
           >
-            <el-sub-menu index="1">
+            <el-sub-menu index="1" :model="meunsList" v-for="item in meunsList" :key="item.id">
               <template #title>
                 <el-icon><location /></el-icon>
                 <span>导航一</span>
               </template>
-              <el-menu-item-group title="导航一分组1">
-                <el-menu-item index="1-1">子导航1</el-menu-item>
-                <el-menu-item index="1-2">子导航2</el-menu-item>
-              </el-menu-item-group>
-              <el-menu-item-group title="Group Two">
-                <el-menu-item index="1-3">item three</el-menu-item>
-              </el-menu-item-group>
-              <el-sub-menu index="1-4">
-                <template #title>item four</template>
-                <el-menu-item index="1-4-1">item one</el-menu-item>
-              </el-sub-menu>
+                <el-menu-item index="1-1">
+                  <template #title>
+                    <el-icon><location /></el-icon>
+                    <span>导航</span>
+                  </template>
+                </el-menu-item>
             </el-sub-menu>
-            <el-menu-item index="2">
-              <el-icon><icon-menu /></el-icon>
-              <span>Navigator Two</span>
-            </el-menu-item>
-            <el-menu-item index="3" disabled>
-              <el-icon><document /></el-icon>
-              <span>Navigator Three</span>
-            </el-menu-item>
-            <el-menu-item index="4">
-              <el-icon><setting /></el-icon>
-              <span>Navigator Four</span>
-            </el-menu-item>
           </el-menu>
         </div>
       </el-aside>
@@ -63,6 +46,24 @@ import {
   Location,
   Setting
 } from '@element-plus/icons-vue'
+import { ref } from 'vue'
+import axios from 'axios'
+const {
+  onBeforeMount,
+} = require('vue')
+
+const meunsList = ref([])
+
+onBeforeMount(() => {
+  getMenuList()
+})
+
+const getMenuList = async () => {
+  const { data: res } = await axios.get('Menus')
+  if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+  meunsList = res.data
+  console.log(meunsList)
+}
 
 const logout = () => {
   window.sessionStorage.clear()

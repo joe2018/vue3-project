@@ -8,13 +8,16 @@ const config = {
     'Content-type': 'application/x-www-form-urlencoded'
   }
 }
-const api = axios.create(config)
+
+axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
+
+axios.create(config)
 
 // 默认post请求，使用application/json形式
-api.defaults.headers.post['Content-Type'] = 'application/json'
+axios.defaults.headers.post['Content-Type'] = 'application/json'
 
 // 封装post
-api.post = function (url, params) {
+axios.post = function (url, params) {
   return new Promise((resolve, reject) => {
     // console.log("****************************");
     axios({
@@ -35,8 +38,14 @@ api.post = function (url, params) {
   })
 }
 
+// 请求拦截器
+axios.interceptors.request.use(config => {
+  config.headers.Authorization = window.sessionStorage.getItem('token')
+  return config
+})
+
 // 响应拦截器
-api.interceptors.response.use(
+axios.interceptors.response.use(
   response => {
     // 对响应数据做一些事情
     return response
@@ -94,4 +103,4 @@ api.interceptors.response.use(
     return Promise.reject(error)
   })
 
-export default api
+export default axios

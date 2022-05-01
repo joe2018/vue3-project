@@ -41,7 +41,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import api from '@/axios/config'
+import axios from 'axios'
 
 const { ElMessage } = require('element-plus')
 
@@ -67,7 +67,7 @@ const submitForm = (formEl) => {
   if (!formEl) return
   formEl.validate(async (valid, fields) => {
     if (valid) {
-      const { data: res } = await api.post('login', form)
+      const { data: res } = await axios.post('login', form)
       if (res.meta.status !== 200) return ElMessage.error('用户名或密码错误')
       ElMessage({
         message: '登入成功',
