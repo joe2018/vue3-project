@@ -1,10 +1,11 @@
 <template>
     <el-container class="home-container">
-      <el-aside width="200px">
+      <el-aside :width="isCollapse?'64px':'200px'">
         <div class="logo-box">
           <img src="../../assets/logo1.2cbfa964.png" alt=""/>
-          <span>供应链电商管理后台</span>
+          <span>{{isCollapse?'':'电商管理后台'}}</span>
         </div>
+        <div class="toggle-button" @click="toggleCollapse">|||</div>
         <div>
           <el-menu
             active-text-color="#409eff"
@@ -12,7 +13,9 @@
             class="el-menu-vertical-demo"
             default-active="2"
             text-color="#fff"
-            unique-opened="true"
+            :unique-opened="true"
+            :collapse="isCollapse"
+            :collapse-transition="false"
           >
             <el-sub-menu :index="item.id + ''" v-for="item in meunsList" :key="item.id">
               <template #title>
@@ -36,14 +39,14 @@
           <el-button type="info" @click="logout">登出</el-button>
         </el-header>
         <el-main>
-          内容页面
+          <router-view></router-view>
         </el-main>
       </el-container>
     </el-container>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import {
   Avatar,
   Checked,
@@ -60,13 +63,19 @@ const {
 } = require('vue')
 
 const meunsList = ref([])
-const iconObj = ref({
+const iconObj = shallowRef({
   125: Avatar,
   103: Checked,
   101: Goods,
   102: List,
   145: PieChart
 })
+
+const isCollapse = ref(false)
+
+const toggleCollapse = () => {
+  isCollapse.value = !isCollapse.value
+}
 
 onBeforeMount(async () => {
   meunsList.value = await getMenuList()
@@ -101,12 +110,14 @@ const logout = () => {
     display: flex;
     align-items: center;
     img{
-      padding: 10px;
-      height: 30px;
-      width: 30px;
+      padding: 5px;
+      height: 25px;
+      width: 25px;
+      transform: translate(38%,0%);
     }
     span{
       color: #f1f1f1;
+      transform: translate(25%,0%);
   }}
   .el-menu{
     border-right: none;
@@ -115,5 +126,15 @@ const logout = () => {
 
 .el-main{
   background-color: #ffffff;
+}
+.toggle-button{
+  background-color: #4a5064;
+  font-size: 10px;
+  line-height: 24px;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+
 }
 </style>
