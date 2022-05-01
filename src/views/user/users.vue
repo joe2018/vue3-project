@@ -64,10 +64,7 @@
       <el-pagination
         v-model:currentPage="queryInfo.pagenum"
         v-model:page-size="queryInfo.pagesize"
-        :page-sizes="[5, 10, 30, 50]"
-        :small="small"
-        :disabled="disabled"
-        :background="background"
+        :page-sizes="[1, 3, 5, 10]"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
         @size-change="handleSizeChange"
@@ -79,7 +76,7 @@
 
 <script setup>
 import { Search, Edit, Delete, Setting } from '@element-plus/icons'
-import { ref, reactive } from 'vue'
+import { ref, reactive, shallowRef } from 'vue'
 import axios from 'axios'
 const { ElMessage } = require('element-plus')
 
@@ -88,12 +85,12 @@ const {
 } = require('vue')
 
 const usersList = ref([])
-const total = ref([])
+const total = ref(0)
 
 const queryInfo = reactive({
   query: '',
   pagenum: 1,
-  pagesize: 2
+  pagesize: 1
 })
 onBeforeMount(() => {
   getUserList()
@@ -104,8 +101,16 @@ const getUserList = async () => {
   if (res.meta.status !== 200) return ElMessage.error('获取用户数据错误')
   usersList.value = res.data.users
   total.value = res.data.total
-  console.log(usersList)
-  console.log(total)
+}
+
+const handleCurrentChange = (newPage) => {
+  queryInfo.pagenum = newPage
+  getUserList()
+}
+
+const handleSizeChange = (newSize) => {
+  queryInfo.pagesize = newSize
+  getUserList()
 }
 
 </script>
