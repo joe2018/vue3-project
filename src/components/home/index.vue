@@ -59,6 +59,7 @@ import {
 
 import axios from 'axios'
 
+const { ElMessage } = require('element-plus')
 const {
   onBeforeMount
 } = require('vue')
@@ -85,7 +86,7 @@ onBeforeMount(async () => {
 
 const getMenuList = async () => {
   const { data: res } = await axios.get('Menus')
-  if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
   return res.data
 }
 

@@ -7,12 +7,106 @@
     </el-breadcrumb>
 
     <el-card>
-      <div>111</div>
+      <el-row :gutter="10">
+        <el-col :span="6"><div class="grid-content bg-purple" />
+          <el-input
+            placeholder="Please Input"
+            :prefix-icon="Search"
+          />
+        </el-col>
+        <el-col :span="4"><div class="grid-content bg-purple" />
+          <el-button type="primary">添加用户</el-button>
+        </el-col>
+      </el-row>
+      <el-table :data="usersList" border stripe style="width: 100%">
+        <el-table-column fixed="" type="index" label="序号" />
+        <el-table-column prop="username" label="姓名" />
+        <el-table-column prop="email" label="邮箱" />
+        <el-table-column prop="mobile" label="电话" />
+        <el-table-column prop="role_name" label="角色" />
+        <el-table-column label="状态" >
+          <template v-slot="scope">
+            <el-switch v-model="scope.row.mg_state" />
+          </template>
+        </el-table-column>
+        <el-table-column fixed="right" label="操作" width="180">
+          <template v-slot="scope">
+<!--            编辑-->
+            <el-tooltip
+              effect="dark"
+              content="编辑"
+              placement="top"
+              :enterable="false"
+            >
+            <el-button type="primary" size="small" :icon="Edit" />
+            </el-tooltip>
+<!--            删除-->
+            <el-tooltip
+              effect="dark"
+              content="删除用户"
+              placement="top"
+              :enterable="false"
+            >
+            <el-button type="danger" size="small" :icon="Delete"></el-button>
+            </el-tooltip>
+<!--            分配角色-->
+            <el-tooltip
+              effect="dark"
+              content="权限分配"
+              placement="top"
+              :enterable="false"
+            >
+            <el-button type="warning" size="small" :icon="Setting"></el-button>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+        v-model:currentPage="queryInfo.pagenum"
+        v-model:page-size="queryInfo.pagesize"
+        :page-sizes="[5, 10, 30, 50]"
+        :small="small"
+        :disabled="disabled"
+        :background="background"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </el-card>
   </div>
 </template>
 
 <script setup>
+import { Search, Edit, Delete, Setting } from '@element-plus/icons'
+import { ref, reactive } from 'vue'
+import axios from 'axios'
+const { ElMessage } = require('element-plus')
+
+const {
+  onBeforeMount
+} = require('vue')
+
+const usersList = ref([])
+const total = ref([])
+
+const queryInfo = reactive({
+  query: '',
+  pagenum: 1,
+  pagesize: 2
+})
+onBeforeMount(() => {
+  getUserList()
+})
+
+const getUserList = async () => {
+  const { data: res } = await axios.get('users', { params: queryInfo })
+  if (res.meta.status !== 200) return ElMessage.error('获取用户数据错误')
+  usersList.value = res.data.users
+  total.value = res.data.total
+  console.log(usersList)
+  console.log(total)
+}
 
 </script>
 
