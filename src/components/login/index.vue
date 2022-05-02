@@ -45,7 +45,7 @@ import {
   Avatar
 } from '@element-plus/icons-vue'
 import { reactive, ref } from 'vue'
-import axios from 'axios'
+import api from '@/axios/config'
 
 const { ElMessage } = require('element-plus')
 
@@ -59,11 +59,11 @@ const form = reactive({
 const loginFormRules = {
   username: [
     { required: true, message: '用户名不可为空', trigger: 'blur' },
-    { min: 3, max: 10, message: '用户名长度在3-11位之间', trigger: 'blur' }
+    { min: 3, max: 11, message: '用户名长度在3-11位之间', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '密码不可为空', trigger: 'blur' },
-    { min: 3, max: 12, message: '密码长度在3-11位之间', trigger: 'blur' }
+    { min: 3, max: 12, message: '密码长度在3-12位之间', trigger: 'blur' }
   ]
 }
 
@@ -71,7 +71,7 @@ const submitForm = (formEl) => {
   if (!formEl) return
   formEl.validate(async (valid, fields) => {
     if (valid) {
-      const { data: res } = await axios.post('login', form)
+      const { data: res } = await api.post('login', form)
       if (res.meta.status !== 200) return ElMessage.error('用户名或密码错误')
       ElMessage({
         message: '登入成功',

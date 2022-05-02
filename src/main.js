@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router/index.js'
 import store from './store'
 import installElementPlus from './plugins/element.js'
-import api from './axios/config'
+import api from './axios/config.js'
 
 // 导入全局样式
 import './assets/css/global.css'

@@ -48,6 +48,7 @@
 
 <script setup>
 import { ref, shallowRef } from 'vue'
+import api from '@/axios/config'
 import {
   Avatar,
   Checked,
@@ -56,8 +57,6 @@ import {
   PieChart,
   Menu as IconMenu
 } from '@element-plus/icons-vue'
-
-import axios from 'axios'
 
 const { ElMessage } = require('element-plus')
 const {
@@ -85,7 +84,7 @@ onBeforeMount(async () => {
 })
 
 const getMenuList = async () => {
-  const { data: res } = await axios.get('Menus')
+  const { data: res } = await api.get('Menus')
   if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
   return res.data
 }

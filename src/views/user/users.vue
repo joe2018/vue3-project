@@ -78,26 +78,32 @@
         @current-change="handleCurrentChange"
       />
     </el-card>
-    <el-dialog v-model="dialogFormVisible" title="新增用户">
-<!--      <el-form :model="form">-->
-<!--        <el-form-item label="Promotion name" :label-width="formLabelWidth">-->
-<!--          <el-input v-model="form.name" autocomplete="off" />-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="Zones" :label-width="formLabelWidth">-->
-<!--          <el-select v-model="form.region" placeholder="Please select a zone">-->
-<!--            <el-option label="Zone No.1" value="shanghai" />-->
-<!--            <el-option label="Zone No.2" value="beijing" />-->
-<!--          </el-select>-->
-<!--        </el-form-item>-->
-<!--      </el-form>-->
-      <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false"
-        >Confirm</el-button
-        >
-      </span>
-      </template>
+    <el-dialog v-model="dialogFormVisible" title="新增用户" @close="addDialogClosed(ruleFormRef)">
+      <el-form
+        ref="ruleFormRef"
+        :model="ruleForm"
+        :rules="ruleFormRules"
+        label-width="70px"
+      >
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="ruleForm.username" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input type="password" v-model="ruleForm.password" />
+        </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="ruleForm.mobile" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="ruleForm.email" />
+        </el-form-item>
+        <!--        按钮区域-->
+        <el-form-item>
+          <el-button type="primary" @click="addUsertForm(ruleFormRef)">提交</el-button>
+          <el-button @click="resetForm(ruleFormRef)">重置</el-button>
+          <el-button @click="dialogFormVisible = false">关闭</el-button>
+        </el-form-item>
+      </el-form>
     </el-dialog>
   </div>
 </template>
@@ -105,15 +111,28 @@
 <script setup>
 import { Search, Edit, Delete, Setting } from '@element-plus/icons'
 import { ref, reactive } from 'vue'
-import axios from 'axios'
+import api from '@/axios/config'
+
 const { ElMessage } = require('element-plus')
+
+const ruleFormRef = ref('')
+
+const ruleForm = reactive({
+  username: '',
+  password: '',
+  email: '',
+  mobile: ''
+})
 
 const {
   onBeforeMount
 } = require('vue')
 
 const usersList = ref([])
+
 const total = ref(0)
+
+const dialogFormVisible = ref(false)
 
 const queryInfo = reactive({
   query: '',
@@ -125,7 +144,7 @@ onBeforeMount(() => {
 })
 
 const userStateChanged = async (userinfo) => {
-  const { data: res } = await axios.put(`users/${userinfo.id}/state/${userinfo.mg_state}`)
+  const { data: res } = await api.put(`users/${userinfo.id}/state/${userinfo.mg_state}`)
   if (res.meta.status !== 200) {
     userinfo.mg_state = !userinfo.mg_state
     return ElMessage.error('更新状态失败！')
@@ -134,7 +153,7 @@ const userStateChanged = async (userinfo) => {
 }
 
 const getUserList = async () => {
-  const { data: res } = await axios.get('users', { params: queryInfo })
+  const { data: res } = await api.get('users', { params: queryInfo })
   if (res.meta.status !== 200) return ElMessage.error('获取用户数据错误！')
   usersList.value = res.data.users
   total.value = res.data.total
@@ -154,7 +173,62 @@ const searchChange = () => {
   getUserList()
 }
 
-const dialogFormVisible = ref(false)
+const checkUsername = (rule, value, callback) => {
+  const reg = /^[_a-zA-Z0-9]+$/
+  if (value === '' || value === undefined || value === null) {
+    callback()
+  } else {
+    callback()
+    if (!reg.test(value)) {
+      callback(new Error('仅由英文字母，数字以及下划线组成'))
+    } else {
+      callback()
+    }
+  }
+}
+
+const ruleFormRules = reactive({
+  username: [
+    { required: true, message: '用户名不能为空', trigger: 'blur' },
+    { min: 3, max: 11, message: '用户名长度在 3 到 11个字符', trigger: 'blur' },
+    { validator: checkUsername, trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '密码不能为空', trigger: 'blur' },
+    { min: 3, max: 12, message: '密码长度在 3 到 12个字符', trigger: 'blur' }
+  ],
+  email: [
+    { required: false },
+    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+  ],
+  mobile: [
+    { required: false },
+    { pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+  ]
+})
+
+const addUsertForm = (formEl) => {
+  formEl.validate(async (valid, fields) => {
+    if (!valid) return
+    const { data: res } = await api.post('users', ruleForm)
+    if (res.meta.status !== 201) return ElMessage.error(res.meta.msg)
+    ElMessage({
+      message: '新增成功',
+      type: 'success'
+    })
+    dialogFormVisible.value = false
+    getUserList()
+  })
+}
+
+const resetForm = (formEl) => {
+  formEl.resetFields()
+}
+
+const addDialogClosed = (formEl) => {
+  formEl.resetFields()
+}
+
 </script>
 
 <style lang="less" scoped>

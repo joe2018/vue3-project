@@ -1,51 +1,31 @@
 import axios from 'axios'
 import router from '@/router'
+import qs from 'qs'
 
-const config = {
-  baseUrl: 'http://127.0.0.1:8888/api/private/v1/',
-  timeout: 1000,
-  headers: {
-    'Content-type': 'application/x-www-form-urlencoded'
-  }
-}
+// 创建axios实例
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:8888/api/private/v1/',
+  timeout: 1000
+})
 
-axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
-
-axios.create(config)
-
-// 默认post请求，使用application/json形式
-axios.defaults.headers.post['Content-Type'] = 'application/json'
-
-// 封装post
-axios.post = function (url, params) {
-  return new Promise((resolve, reject) => {
-    // console.log("****************************");
-    axios({
-      method: 'post',
-      url: config.baseUrl + url,
-      params,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-      }
-    }).then(response => {
-      if (response.status === 200) {
-        // 根据实际情况进行更改
-        resolve(response)
-      } else {
-        reject(response)
-      }
-    })
-  })
-}
-
-// 请求拦截器
-axios.interceptors.request.use(config => {
+// 2.请求拦截器
+api.interceptors.request.use(config => {
   config.headers.Authorization = window.sessionStorage.getItem('token')
+  // 发请求前做的一些处理，数据转化，配置请求头，设置token,设置loading等，根据需求去添加
+  if (config.method.toLowerCase() === 'get') { // 配置get请求数据(这里是容错处理)
+    if (config.data !== undefined) config.params = config.data
+  }
+  // 防止post请求，后端无法接收参数问题（方式一）
+  if (config.method.toLowerCase() === 'post') { // post请求配置数据转换和请求头
+    config.data = qs.stringify(config.data) // 数据转化,也可以使用qs转换
+  }
   return config
+}, error => {
+  Promise.reject(error)
 })
 
 // 响应拦截器
-axios.interceptors.response.use(
+api.interceptors.response.use(
   response => {
     // 对响应数据做一些事情
     return response
@@ -103,4 +83,4 @@ axios.interceptors.response.use(
     return Promise.reject(error)
   })
 
-export default axios
+export default api
