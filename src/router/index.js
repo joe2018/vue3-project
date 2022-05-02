@@ -3,6 +3,7 @@ import Login from '../components/login/index.vue'
 import Home from '../components/home/index'
 import Welcome from '../views/welcome.vue'
 import Users from '../views/user/users.vue'
+import Rights from '../views/power/Rights'
 
 const routes = [
   {
@@ -30,7 +31,12 @@ const routes = [
       {
         path: '/users',
         component: Users,
-        meta: { title: '用户管理' }
+        meta: { title: '用户列表' }
+      },
+      {
+        path: '/rights',
+        component: Rights,
+        meta: { title: '权限列表' }
       }
     ]
   }
