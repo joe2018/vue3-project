@@ -72,15 +72,15 @@ const submitForm = (formEl) => {
   formEl.validate(async (valid, fields) => {
     if (valid) {
       const { data: res } = await api.post('login', form)
-      if (res.meta.status !== 200) return ElMessage.error('用户名或密码错误')
+      if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
       ElMessage({
-        message: '登入成功',
+        message: res.meta.msg,
         type: 'success'
       })
       window.sessionStorage.setItem('token', res.data.token)
       await window.router.push('/home')
     } else {
-      ElMessage.error('提交错误')
+      ElMessage.error(res.meta.msg)
     }
   })
 }

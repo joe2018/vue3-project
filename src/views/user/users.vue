@@ -45,7 +45,7 @@
               placement="top"
               :enterable="false"
             >
-            <el-button type="primary" size="small" :icon="Edit" />
+            <el-button type="primary" size="small" :icon="Edit" @click="showEditDialog(scope.row.id)"/>
             </el-tooltip>
 <!--            删除-->
             <el-tooltip
@@ -54,7 +54,7 @@
               placement="top"
               :enterable="false"
             >
-            <el-button type="danger" size="small" :icon="Delete"></el-button>
+            <el-button type="danger" size="small" :icon="Delete" @click="deleteOpen(scope.row.id)"></el-button>
             </el-tooltip>
 <!--            分配角色-->
             <el-tooltip
@@ -78,6 +78,7 @@
         @current-change="handleCurrentChange"
       />
     </el-card>
+    <!-- 新增用户 -->
     <el-dialog v-model="dialogFormVisible" title="新增用户" @close="addDialogClosed(ruleFormRef)">
       <el-form
         ref="ruleFormRef"
@@ -105,6 +106,30 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <!-- 编辑用户信息 -->
+    <el-dialog v-model="editDialogVisible" title="编辑用户" @close="editDialogClosed(editFormRef)">
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editFormRules"
+        label-width="70px"
+      >
+        <el-form-item label="用户名" >
+          <el-input v-model="editForm.username" disabled />
+        </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="editForm.mobile" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email" />
+        </el-form-item>
+        <!--        按钮区域-->
+        <el-form-item>
+          <el-button type="primary" @click="editUsertForm(editFormRef)">提交</el-button>
+          <el-button @click="editDialogVisible = false">关闭</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -112,8 +137,7 @@
 import { Search, Edit, Delete, Setting } from '@element-plus/icons'
 import { ref, reactive } from 'vue'
 import api from '@/axios/config'
-
-const { ElMessage } = require('element-plus')
+const { ElMessage, ElMessageBox } = require('element-plus')
 
 const ruleFormRef = ref('')
 
@@ -147,14 +171,14 @@ const userStateChanged = async (userinfo) => {
   const { data: res } = await api.put(`users/${userinfo.id}/state/${userinfo.mg_state}`)
   if (res.meta.status !== 200) {
     userinfo.mg_state = !userinfo.mg_state
-    return ElMessage.error('更新状态失败！')
+    return ElMessage.error(res.meta.msg)
   }
-  ElMessage.success('更新状态成功！')
+  ElMessage.success(res.meta.msg)
 }
 
 const getUserList = async () => {
   const { data: res } = await api.get('users', { params: queryInfo })
-  if (res.meta.status !== 200) return ElMessage.error('获取用户数据错误！')
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
   usersList.value = res.data.users
   total.value = res.data.total
 }
@@ -213,7 +237,7 @@ const addUsertForm = (formEl) => {
     const { data: res } = await api.post('users', ruleForm)
     if (res.meta.status !== 201) return ElMessage.error(res.meta.msg)
     ElMessage({
-      message: '新增成功',
+      message: res.meta.msg,
       type: 'success'
     })
     dialogFormVisible.value = false
@@ -227,6 +251,81 @@ const resetForm = (formEl) => {
 
 const addDialogClosed = (formEl) => {
   formEl.resetFields()
+}
+
+// 以下为用户信息编辑
+
+const editFormRef = ref('')
+
+const editForm = ref({})
+
+const editDialogVisible = ref(false)
+
+const showEditDialog = async (id) => {
+  const { data: res } = await api.get('users/' + id)
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  editForm.value = res.data
+  editDialogVisible.value = true
+}
+
+const editUsertForm = (formEl) => {
+  formEl.validate(async (valid, fields) => {
+    if (!valid) return
+    const { data: res } = await api.put('users/' + editForm.value.id, {
+      email: editForm.value.email, mobile: editForm.value.mobile
+    })
+    if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+    ElMessage({
+      message: res.meta.msg,
+      type: 'success'
+    })
+    editDialogVisible.value = false
+    getUserList()
+  })
+}
+
+const editFormRules = reactive({
+  email: [
+    { required: false },
+    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+  ],
+  mobile: [
+    { required: false },
+    { pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+  ]
+})
+
+const editDialogClosed = (editFormRef) => {
+  editFormRef.resetFields()
+}
+
+// 删除用户
+const deleteOpen = (id) => {
+  ElMessageBox.confirm(
+    '是否删除该用户?',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+    .then(async () => {
+      const { data: res } = await api.delete('users/' + id)
+      if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+      ElMessage({
+        message: res.meta.msg,
+        type: 'success'
+      })
+      getUserList()
+    })
+    .catch(() => {
+      getUserList()
+      ElMessage({
+        type: 'info',
+        message: '未执行删除操作'
+      })
+    })
 }
 
 </script>
