@@ -1,11 +1,5 @@
 <template>
   <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/' }">二级</el-breadcrumb-item>
-      <el-breadcrumb-item>三级</el-breadcrumb-item>
-    </el-breadcrumb>
-
     <el-card>
       <el-row :gutter="10">
         <el-col :span="6"><div class="grid-content bg-purple" />

@@ -40,6 +40,7 @@
           <el-button type="info" @click="logout">登出</el-button>
         </el-header>
         <el-main>
+          <Bread />
           <router-view></router-view>
         </el-main>
       </el-container>
@@ -47,6 +48,7 @@
 </template>
 
 <script setup>
+import Bread from '@/components/bread'
 import { ref, shallowRef } from 'vue'
 import api from '@/axios/config'
 import {
