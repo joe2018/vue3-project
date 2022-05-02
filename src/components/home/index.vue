@@ -99,6 +99,7 @@ const logout = () => {
   window.sessionStorage.clear()
   window.router.push('/login')
 }
+
 </script>
 
 <style lang="less" scoped>
