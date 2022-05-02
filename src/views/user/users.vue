@@ -22,7 +22,7 @@
           </el-input>
         </el-col>
         <el-col :span="4"><div class="grid-content bg-purple" />
-          <el-button type="primary">添加用户</el-button>
+          <el-button type="primary" @click="dialogFormVisible = true">添加用户</el-button>
         </el-col>
       </el-row>
       <el-table :data="usersList" border stripe style="width: 100%">
@@ -78,6 +78,27 @@
         @current-change="handleCurrentChange"
       />
     </el-card>
+    <el-dialog v-model="dialogFormVisible" title="新增用户">
+<!--      <el-form :model="form">-->
+<!--        <el-form-item label="Promotion name" :label-width="formLabelWidth">-->
+<!--          <el-input v-model="form.name" autocomplete="off" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item label="Zones" :label-width="formLabelWidth">-->
+<!--          <el-select v-model="form.region" placeholder="Please select a zone">-->
+<!--            <el-option label="Zone No.1" value="shanghai" />-->
+<!--            <el-option label="Zone No.2" value="beijing" />-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
+<!--      </el-form>-->
+      <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false"
+        >Confirm</el-button
+        >
+      </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -97,7 +118,7 @@ const total = ref(0)
 const queryInfo = reactive({
   query: '',
   pagenum: 1,
-  pagesize: 3
+  pagesize: 5
 })
 onBeforeMount(() => {
   getUserList()
@@ -133,6 +154,7 @@ const searchChange = () => {
   getUserList()
 }
 
+const dialogFormVisible = ref(false)
 </script>
 
 <style lang="less" scoped>
