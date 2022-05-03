@@ -1,0 +1,236 @@
+<template>
+  <div>
+    <el-card>
+      <el-row :gutter="10">
+        <el-col :span="4"><div class="grid-content bg-purple" />
+          <el-button type="primary" @click="rolesFormVisible = true">添加角色</el-button>
+        </el-col>
+      </el-row>
+      <el-table :data="rolesList" border stripe style="width: 100%">
+        <el-table-column type="expand" >
+          <template v-slot="scope">
+            <pre>
+              <el-row :class="['bdbottom',i1 === 0 ? 'bdtop':'','vceter']" v-for="(item1,i1) in scope.row.children" :key="item1.id">
+                <el-col :span="5">
+                  <el-tag vceter>{{item1.authName}}</el-tag>
+                  <el-icon><CaretRight /></el-icon>
+                </el-col>
+                <el-col :span="19">
+                  <el-row :class="[i2 === 0 ? '':'bdtop','vceter' ]" v-for="(item2,i2) in item1.children" :key="item2.id">
+                    <el-col :span="6" >
+                      <el-tag type="success" vceter>{{item2.authName}}</el-tag>
+                      <el-icon><CaretRight /></el-icon>
+                    </el-col>
+                    <el-col :span="18" >
+                      <el-tag type="warning" v-for="(item3,i3) in item2.children" :key="item3.id" closable>{{item3.authName}}</el-tag>
+                    </el-col>
+                  </el-row>
+                </el-col>
+              </el-row>
+            </pre>
+          </template>
+        </el-table-column>
+        <el-table-column type="index" label="序号" />
+        <el-table-column prop="roleName" label="角色名称" />
+        <el-table-column prop="roleDesc" label="角色描述" />
+        <el-table-column fixed="right" label="操作" width="300">
+          <template v-slot="scope">
+            <!--编辑-->
+              <el-button type="primary" size="small" :icon="Edit" @click="editRolesDialog(scope.row.id)">编辑</el-button>
+            <!--删除-->
+              <el-button type="danger" size="small" :icon="Delete" @click="deleteRoles(scope.row.id)">删除</el-button>
+            <!--分配角色-->
+              <el-button type="warning" size="small" :icon="Setting">分配权限</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 新增角色 -->
+      <el-dialog v-model="rolesFormVisible" title="新增角色" @close="rolesDialogClosed(rolesFormRef)">
+        <el-form
+          ref="rolesFormRef"
+          :model="rolesForm"
+          :rules="rolesFormRules"
+          label-width="90px"
+        >
+          <el-form-item label="角色名称" prop="roleName">
+            <el-input v-model="rolesForm.roleName" />
+          </el-form-item>
+          <el-form-item label="角色描述" prop="roleDesc">
+            <el-input v-model="rolesForm.roleDesc" />
+          </el-form-item>
+          <!--        按钮区域-->
+          <el-form-item>
+            <el-button type="primary" @click="addRolesForm(rolesFormRef)">提交</el-button>
+            <el-button @click="resetForm(rolesFormRef)">重置</el-button>
+            <el-button @click="rolesFormVisible = false">关闭</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+      <!-- 编辑角色 -->
+      <el-dialog v-model="editRolesFormVisible" title="新增角色" @close="editRolesDialogClosed(editRolesFormRef)">
+        <el-form
+          ref="editRolesFormRef"
+          :model="editRolesFormData"
+          :rules="rolesFormRules"
+          label-width="90px"
+        >
+          <el-form-item label="角色名称" prop="roleName">
+            <el-input v-model="editRolesFormData.roleName" disabled />
+          </el-form-item>
+          <el-form-item label="角色描述" prop="roleDesc">
+            <el-input v-model="editRolesFormData.roleDesc" />
+          </el-form-item>
+          <!--        按钮区域-->
+          <el-form-item>
+            <el-button type="primary" @click="editRolesForm(editRolesFormRef)">提交</el-button>
+            <el-button @click="editRolesFormVisible = false">关闭</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+    </el-card>
+  </div>
+</template>
+
+<script setup>
+import { CaretRight, Edit, Delete, Setting } from '@element-plus/icons'
+import { ref, onBeforeMount, reactive } from 'vue'
+import api from '@/axios/config'
+
+const { ElMessage, ElMessageBox } = require('element-plus')
+const rolesList = ref()
+// 新增角色相关参数
+const rolesFormVisible = ref(false)
+const rolesFormRef = ref()
+const rolesForm = reactive({
+  roleName: '',
+  roleDesc: ''
+})
+// 编辑角色相关参数
+const editRolesFormVisible = ref(false)
+const editRolesFormRef = ref()
+const editRolesFormData = ref()
+
+onBeforeMount(() => {
+  getRolesList()
+})
+
+// 获取角色列表
+const getRolesList = async () => {
+  const { data: res } = await api.get('/roles')
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  rolesList.value = res.data
+}
+
+const resetForm = (formEl) => {
+  formEl.resetFields()
+}
+
+const rolesDialogClosed = (formEl) => {
+  formEl.resetFields()
+}
+
+// 新增角色验证
+const rolesFormRules = reactive({
+  roleName: [
+    { required: true, message: '角色名不能为空', trigger: 'blur' },
+    { min: 2, max: 26, message: '角色名长度在 3 到 26个字符', trigger: 'blur' }
+  ],
+  roleDesc: [
+    { required: true, message: '角色描述不能为空', trigger: 'blur' },
+    { min: 2, max: 30, message: '角色名长度在 4 到 30个字符', trigger: 'blur' }
+  ]
+})
+
+// 新增角色
+const addRolesForm = (formEl) => {
+  formEl.validate(async (valid, fields) => {
+    if (!valid) return
+    const { data: res } = await api.post('roles', rolesForm)
+    if (res.meta.status !== 201) return ElMessage.error(res.meta.msg)
+    ElMessage({
+      message: res.meta.msg,
+      type: 'success'
+    })
+    rolesFormVisible.value = false
+    getRolesList()
+  })
+}
+
+// 编辑角色弹窗
+const editRolesDialog = async (id) => {
+  const { data: res } = await api.get('roles/' + id)
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  editRolesFormData.value = res.data
+  editRolesFormVisible.value = true
+}
+
+// 编辑角色弹窗关闭
+const editRolesDialogClosed = (formEl) => {
+  formEl.resetFields()
+}
+
+// 编辑角色提交
+const editRolesForm = (formEl) => {
+  formEl.validate(async (valid, fields) => {
+    if (!valid) return
+    const { data: res } = await api.put('roles/' + editRolesFormData.value.roleId, {
+      roleName: editRolesFormData.value.roleName, roleDesc: editRolesFormData.value.roleDesc
+    })
+    if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+    ElMessage({
+      message: res.meta.msg,
+      type: 'success'
+    })
+    editRolesFormVisible.value = false
+    getRolesList()
+  })
+}
+
+// 删除角色
+const deleteRoles = (id) => {
+  ElMessageBox.confirm(
+    '是否删除该角色?',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+    .then(async () => {
+      const { data: res } = await api.delete('roles/' + id)
+      if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+      ElMessage({
+        message: res.meta.msg,
+        type: 'success'
+      })
+      getRolesList()
+    })
+    .catch(() => {
+      getRolesList()
+      ElMessage({
+        type: 'info',
+        message: '未执行删除操作'
+      })
+    })
+}
+</script>
+
+<style lang="less" scoped>
+.el-tag{
+  margin: 7px;
+}
+
+.bdtop{
+  border-top: 1px solid #eeeeee;
+}
+
+.bdbottom {
+  border-bottom: 1px solid #eeeeee;
+}
+
+.vceter{
+  display: flex;
+  align-items: center;
+}
+</style>
