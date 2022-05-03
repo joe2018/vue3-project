@@ -12,17 +12,17 @@
             <pre>
               <el-row :class="['bdbottom',i1 === 0 ? 'bdtop':'','vceter']" v-for="(item1,i1) in scope.row.children" :key="item1.id">
                 <el-col :span="5">
-                  <el-tag vceter>{{item1.authName}}</el-tag>
+                  <el-tag vceter closable @close="removeRolesById(scope.row,item1.id)">{{item1.authName}}</el-tag>
                   <el-icon><CaretRight /></el-icon>
                 </el-col>
                 <el-col :span="19">
                   <el-row :class="[i2 === 0 ? '':'bdtop','vceter' ]" v-for="(item2,i2) in item1.children" :key="item2.id">
                     <el-col :span="6" >
-                      <el-tag type="success" vceter>{{item2.authName}}</el-tag>
+                      <el-tag type="success" vceter closable @close="removeRolesById(scope.row,item2.id)">{{item2.authName}}</el-tag>
                       <el-icon><CaretRight /></el-icon>
                     </el-col>
                     <el-col :span="18" >
-                      <el-tag type="warning" v-for="(item3,i3) in item2.children" :key="item3.id" closable>{{item3.authName}}</el-tag>
+                      <el-tag type="warning" v-for="(item3) in item2.children" :key="item3.id" closable @close="removeRolesById(scope.row,item3.id)">{{item3.authName}}</el-tag>
                     </el-col>
                   </el-row>
                 </el-col>
@@ -208,6 +208,34 @@ const deleteRoles = (id) => {
     })
     .catch(() => {
       getRolesList()
+      ElMessage({
+        type: 'info',
+        message: '未执行删除操作'
+      })
+    })
+}
+
+// 删除权限
+const removeRolesById = (role, rightId) => {
+  ElMessageBox.confirm(
+    '是否删除该权限?',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+    .then(async () => {
+      const { data: res } = await api.delete(`roles/${role.id}/state/${rightId}`)
+      if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+      ElMessage({
+        message: res.meta.msg,
+        type: 'success'
+      })
+      role.children = res.data
+    })
+    .catch(() => {
       ElMessage({
         type: 'info',
         message: '未执行删除操作'
