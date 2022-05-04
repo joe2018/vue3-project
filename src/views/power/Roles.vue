@@ -40,7 +40,7 @@
             <!--删除-->
               <el-button type="danger" size="small" :icon="Delete" @click="deleteRoles(scope.row.id)">删除</el-button>
             <!--分配角色-->
-              <el-button type="warning" size="small" :icon="Setting">分配权限</el-button>
+              <el-button type="warning" size="small" :icon="Setting" @click="showSetRightDialog">分配权限</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -87,6 +87,28 @@
           </el-form-item>
         </el-form>
       </el-dialog>
+      <!--权限分配-->
+      <el-dialog
+        v-model="setRightDialogVisible"
+        title="分配权限"
+        width="50%"
+      >
+        <el-tree
+          :props="treeProps"
+          :load="reghtData"
+          lazy
+          show-checkbox
+          @check-change="handleCheckChange"
+        />
+        <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+        >Confirm</el-button
+        >
+      </span>
+        </template>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -109,6 +131,8 @@ const rolesForm = reactive({
 const editRolesFormVisible = ref(false)
 const editRolesFormRef = ref()
 const editRolesFormData = ref()
+const setRightDialogVisible = ref(false)
+const reghtData = ref()
 
 onBeforeMount(() => {
   getRolesList()
@@ -242,6 +266,19 @@ const removeRolesById = (role, rightId) => {
       })
     })
 }
+// 分配权限
+const treeProps = reactive({
+  label: 'authName',
+  children: 'children'
+})
+
+const showSetRightDialog = async () => {
+  const { data: res } = await api.get('rights/tree')
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  reghtData.value = res.data
+  setRightDialogVisible.value = true
+}
+
 </script>
 
 <style lang="less" scoped>
