@@ -57,7 +57,7 @@
               placement="top"
               :enterable="false"
             >
-            <el-button type="warning" size="small" :icon="Setting"></el-button>
+            <el-button type="warning" size="small" :icon="Setting" @click="setRole(scope.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -124,6 +124,26 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <!-- 分配角色对话框 -->
+    <el-dialog v-model="setRoleDialogVisible" title="分配角色" @close="setRoleDialogClosed" width="50%">
+    <div>
+      <P>当前的用户：{{userInfo.username}}</P>
+      <P>当前的角色：{{userInfo.role_name}}</P>
+      <P>选择新的角色：<el-select v-model="selectedRoleId"  placeholder="请选择">
+        <el-option
+          v-for="item in rolesList"
+          :key="item.id"
+          :label="item.roleName"
+          :value="item.id"
+        />
+      </el-select>
+      </P>
+    </div>
+      <span class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveRoleInfo">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -134,7 +154,7 @@ import api from '@/axios/config'
 const { ElMessage, ElMessageBox } = require('element-plus')
 
 const ruleFormRef = ref('')
-
+const setRoleDialogVisible = ref(false)
 const ruleForm = reactive({
   username: '',
   password: '',
@@ -142,9 +162,8 @@ const ruleForm = reactive({
   mobile: ''
 })
 
-const {
-  onBeforeMount
-} = require('vue')
+const selectedRoleId = ref()
+const { onBeforeMount } = require('vue')
 
 const usersList = ref([])
 
@@ -307,10 +326,7 @@ const deleteOpen = (id) => {
     .then(async () => {
       const { data: res } = await api.delete('users/' + id)
       if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
-      ElMessage({
-        message: res.meta.msg,
-        type: 'success'
-      })
+      ElMessage.success(res.meta.msg)
       getUserList()
     })
     .catch(() => {
@@ -320,6 +336,29 @@ const deleteOpen = (id) => {
         message: '未执行删除操作'
       })
     })
+}
+
+const userInfo = ref()
+const rolesList = ref()
+
+const setRole = async (role) => {
+  userInfo.value = role
+  const { data: res } = await api.get('roles')
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  rolesList.value = res.data
+  setRoleDialogVisible.value = true
+}
+
+const saveRoleInfo = async () => {
+  if (!selectedRoleId.value) return ElMessage.error('请选择需要替换的角色')
+  const { data: res } = await api.put(`users/${userInfo.value.id}/role`, { rid: selectedRoleId.value })
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  getUserList()
+  setRoleDialogVisible.value = false
+}
+const setRoleDialogClosed = () => {
+  userInfo.value = ''
+  selectedRoleId.value = ''
 }
 
 </script>
