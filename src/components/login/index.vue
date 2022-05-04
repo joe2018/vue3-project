@@ -80,7 +80,7 @@ const submitForm = (formEl) => {
       window.sessionStorage.setItem('token', res.data.token)
       await window.router.push('/home')
     } else {
-      ElMessage.error(res.meta.msg)
+      ElMessage.error('提交错误')
     }
   })
 }

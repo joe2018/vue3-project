@@ -12,14 +12,18 @@
             <pre>
               <el-row :class="['bdbottom',i1 === 0 ? 'bdtop':'','vceter']" v-for="(item1,i1) in scope.row.children" :key="item1.id">
                 <el-col :span="5">
+                  <div style="white-space: nowrap">
                   <el-tag vceter closable @close="removeRolesById(scope.row,item1.id)">{{item1.authName}}</el-tag>
                   <el-icon><CaretRight /></el-icon>
+                  </div>
                 </el-col>
                 <el-col :span="19">
                   <el-row :class="[i2 === 0 ? '':'bdtop','vceter' ]" v-for="(item2,i2) in item1.children" :key="item2.id">
                     <el-col :span="6" >
-                      <el-tag type="success" vceter closable @close="removeRolesById(scope.row,item2.id)">{{item2.authName}}</el-tag>
-                      <el-icon><CaretRight /></el-icon>
+                      <div style="white-space: nowrap">
+                        <el-tag type="success" vceter closable @close="removeRolesById(scope.row,item2.id)">{{item2.authName}}</el-tag>
+                        <el-icon><CaretRight /></el-icon>
+                      </div>
                     </el-col>
                     <el-col :span="18" >
                       <el-tag type="warning" v-for="(item3) in item2.children" :key="item3.id" closable @close="removeRolesById(scope.row,item3.id)">{{item3.authName}}</el-tag>
@@ -40,7 +44,7 @@
             <!--删除-->
               <el-button type="danger" size="small" :icon="Delete" @click="deleteRoles(scope.row.id)">删除</el-button>
             <!--分配角色-->
-              <el-button type="warning" size="small" :icon="Setting" @click="showSetRightDialog">分配权限</el-button>
+              <el-button type="warning" size="small" :icon="Setting" @click="showSetRightDialog(scope.row)">分配权限</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -92,20 +96,21 @@
         v-model="setRightDialogVisible"
         title="分配权限"
         width="50%"
+        @close="setRightDialogClose"
       >
         <el-tree
           :props="treeProps"
-          :load="reghtData"
-          lazy
+          :data="reghtData"
           show-checkbox
-          @check-change="handleCheckChange"
+          node-key="id"
+          default-expand-all
+          :default-checked-keys="deftKey"
+          ref="treeRef"
         />
         <template #footer>
       <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogVisible = false"
-        >Confirm</el-button
-        >
+        <el-button @click="setRightDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="ailotRights(treeRef)">确定</el-button>
       </span>
         </template>
       </el-dialog>
@@ -132,7 +137,10 @@ const editRolesFormVisible = ref(false)
 const editRolesFormRef = ref()
 const editRolesFormData = ref()
 const setRightDialogVisible = ref(false)
-const reghtData = ref()
+const reghtData = ref(Object)
+const deftKey = reactive([])
+const treeRef = ref()
+const roleId = ref()
 
 onBeforeMount(() => {
   getRolesList()
@@ -171,10 +179,7 @@ const addRolesForm = (formEl) => {
     if (!valid) return
     const { data: res } = await api.post('roles', rolesForm)
     if (res.meta.status !== 201) return ElMessage.error(res.meta.msg)
-    ElMessage({
-      message: res.meta.msg,
-      type: 'success'
-    })
+    ElMessage.success(res.meta.msg)
     rolesFormVisible.value = false
     getRolesList()
   })
@@ -201,10 +206,7 @@ const editRolesForm = (formEl) => {
       roleName: editRolesFormData.value.roleName, roleDesc: editRolesFormData.value.roleDesc
     })
     if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
-    ElMessage({
-      message: res.meta.msg,
-      type: 'success'
-    })
+    ElMessage.success(res.meta.msg)
     editRolesFormVisible.value = false
     getRolesList()
   })
@@ -224,18 +226,12 @@ const deleteRoles = (id) => {
     .then(async () => {
       const { data: res } = await api.delete('roles/' + id)
       if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
-      ElMessage({
-        message: res.meta.msg,
-        type: 'success'
-      })
+      ElMessage.success(res.meta.msg)
       getRolesList()
     })
     .catch(() => {
       getRolesList()
-      ElMessage({
-        type: 'info',
-        message: '未执行删除操作'
-      })
+      ElMessage.info('未执行删除操作')
     })
 }
 
@@ -253,32 +249,51 @@ const removeRolesById = (role, rightId) => {
     .then(async () => {
       const { data: res } = await api.delete(`roles/${role.id}/state/${rightId}`)
       if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
-      ElMessage({
-        message: res.meta.msg,
-        type: 'success'
-      })
+      ElMessage.success(res.meta.msg)
       role.children = res.data
     })
     .catch(() => {
-      ElMessage({
-        type: 'info',
-        message: '未执行删除操作'
-      })
+      ElMessage.info('未执行删除操作')
     })
 }
 // 分配权限
-const treeProps = reactive({
+const treeProps = {
   label: 'authName',
   children: 'children'
-})
+}
 
-const showSetRightDialog = async () => {
+const showSetRightDialog = async (role) => {
+  roleId.value = role.id
   const { data: res } = await api.get('rights/tree')
   if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
   reghtData.value = res.data
+  getLeafKeys(role, deftKey)
   setRightDialogVisible.value = true
 }
 
+const getLeafKeys = (node, arr) => {
+  if (!node.children) {
+    return arr.push(node.id)
+  }
+  node.children.forEach(item => getLeafKeys(item, arr))
+}
+
+const setRightDialogClose = () => {
+  deftKey.length = []
+}
+
+const ailotRights = async (treeRef) => {
+  const keys = [
+    ...treeRef.getCheckedKeys(),
+    ...treeRef.getHalfCheckedKeys()
+  ]
+  const idDtr = keys.join(',')
+  const { data: res } = await api.post(`roles/${roleId.value}/rights`, { rids: idDtr })
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  ElMessage.success(res.meta.msg)
+  setRightDialogVisible.value = false
+  getRolesList()
+}
 </script>
 
 <style lang="less" scoped>
