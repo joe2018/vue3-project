@@ -40,12 +40,9 @@
 </template>
 
 <script setup>
-import {
-  Lock,
-  Avatar
-} from '@element-plus/icons-vue'
 import { reactive, ref } from 'vue'
 import api from '@/axios/config'
+const { Lock, Avatar } = require('@element-plus/icons')
 
 const { ElMessage } = require('element-plus')
 

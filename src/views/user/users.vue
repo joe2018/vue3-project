@@ -148,9 +148,9 @@
 </template>
 
 <script setup>
-import { Search, Edit, Delete, Setting } from '@element-plus/icons'
 import { ref, reactive } from 'vue'
 import api from '@/axios/config'
+const { Search, Edit, Delete, Setting } = require('@element-plus/icons')
 const { ElMessage, ElMessageBox } = require('element-plus')
 
 const ruleFormRef = ref('')

@@ -5,6 +5,7 @@ import Welcome from '../views/welcome.vue'
 import Users from '../views/user/users.vue'
 import Rights from '../views/power/Rights'
 import Roles from '../views/power/Roles'
+import Categories from '../views/goods/Cate'
 
 const routes = [
   {
@@ -43,6 +44,11 @@ const routes = [
         path: '/roles',
         component: Roles,
         meta: { title: '角色列表' }
+      },
+      {
+        path: '/categories',
+        component: Categories,
+        meta: { title: '商品分类' }
       }
     ]
   }
