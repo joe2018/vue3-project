@@ -38,8 +38,8 @@
       </el-table-column>
       <el-table-column label="操作"  >
         <template v-slot="scope">
-          <el-button type="primary" size="small" :icon="Edit" @click="openEditCateBtn">编辑</el-button>
-          <el-button type="danger" size="small" :icon="Delete" @click="setCateDialogVisible = false">关闭</el-button>
+          <el-button type="primary" size="small" :icon="Edit" @click="openEditCateBtn(scope.row.cat_id)">编辑</el-button>
+          <el-button type="danger" size="small" :icon="Delete" @click="deleteCate(scope.row.cat_id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -76,8 +76,26 @@
       </el-form-item>
       <!--        按钮区域-->
       <el-form-item>
-        <el-button type="primary" @click="setCateFormUpBtn">提交</el-button>
+        <el-button type="primary" @click="setCateFormUpBtn(setCateFormRef)">提交</el-button>
         <el-button @click="setCateDialogVisible = false">关闭</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+  <!-- 编辑分类对话框 -->
+  <el-dialog v-model="editCateDialogVisible" title="编辑分类" @close="editCateDialogClosed" width="30%">
+    <el-form
+      ref="editCateFormRef"
+      :model="editCateForm"
+      :rules="setCateFormRules"
+      label-width="70px"
+    >
+      <el-form-item label="分类名" prop="cat_name">
+        <el-input v-model="editCateForm.cat_name" />
+      </el-form-item>
+      <!--        按钮区域-->
+      <el-form-item>
+        <el-button type="primary" @click="editCateFormUpBtn(editCateFormRef)">提交</el-button>
+        <el-button @click="editCateDialogVisible = false">关闭</el-button>
       </el-form-item>
     </el-form>
   </el-dialog>
@@ -87,11 +105,32 @@
 <script setup>
 import api from '@/axios/config'
 import { ref, reactive, onBeforeMount } from 'vue'
-const { ElMessage } = require('element-plus')
+const { ElMessage, ElMessageBox } = require('element-plus')
 const { Edit, Delete } = require('@element-plus/icons')
 
 // 新增分类弹窗对象
 const setCateFormRef = ref()
+
+// 编辑分类表单
+const editCateForm = reactive({
+  cat_id: 0,
+  cat_name: ''
+})
+
+// 编辑分类表单对象
+const editCateFormRef = ref()
+
+// 编辑分类提交
+const editCateFormUpBtn = (formEl) => {
+  formEl.validate(async (valid, fields) => {
+    if (!valid) return
+    const { data: res } = await api.put('categories/' + editCateForm.cat_id, { cat_name: editCateForm.cat_name })
+    if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+    editCateDialogVisible.value = false
+    ElMessage.success(res.meta.msg)
+    getCateList()
+  })
+}
 
 // 新增分类表单
 const addCateForm = reactive({
@@ -109,7 +148,6 @@ const parentCateList = ref()
 const parentCateChanged = () => {
   if (selectedKeys.value) {
     if (selectedKeys.value.length > 0) {
-      console.log(selectedKeys.value)
       addCateForm.cat_pid = selectedKeys.value[selectedKeys.value.length - 1]
       addCateForm.cat_level = selectedKeys.value.length
     }
@@ -132,7 +170,7 @@ const checkSpecialKey = (str) => {
 
 // 指定级联选择器的配置对象
 const cascaderProps = reactive({
-  value: 'cat_pid',
+  value: 'cat_id',
   label: 'cat_name',
   children: 'children',
   expandTrigger: 'hover',
@@ -148,17 +186,31 @@ const validateInput = (rule, value, callback) => {
   }
 }
 
-// 分类编辑
-const openEditCateBtn = () => {
-
+// 打开分类编辑
+const openEditCateBtn = async (id) => {
+  const { data: res } = await api.get('categories/' + id)
+  if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+  editCateForm.cat_name = res.data.cat_name
+  editCateForm.cat_id = res.data.cat_id
+  editCateDialogVisible.value = true
 }
+
+// 分类对话框开关属性
+const editCateDialogVisible = ref(false)
 
 // 新增分类提交
-const setCateFormUpBtn = async () => {
-  console.log(addCateForm)
+const setCateFormUpBtn = async (formEl) => {
+  formEl.validate(async (valid, fields) => {
+    if (!valid) return
+    const { data: res } = await api.post('categories', addCateForm)
+    if (res.meta.status !== 201) return ElMessage.error(res.meta.msg)
+    ElMessage.success(res.meta.msg)
+    setCateDialogVisible.value = false
+    getCateList()
+  })
 }
 
-// 新增分类校验
+// 分类校验
 const setCateFormRules = reactive({
   cat_name: [
     { required: true, message: '分类名不能为空', trigger: 'blur' },
@@ -214,9 +266,15 @@ const handleSizeChange = (newSize) => {
 
 // 新增分类关闭事件
 const setCateDialogClosed = () => {
-  addCateForm.cat_pid = 0
+  addCateForm.cat_id = 0
   addCateForm.cat_level = 0
   addCateForm.cat_name = ''
+}
+
+// 编辑分类关闭事件
+const editCateDialogClosed = () =>{
+  editCateForm.cat_name = ''
+  editCateForm.cat_id = 0
 }
 
 // 获取父级分类的数据集
@@ -230,6 +288,29 @@ const getParentCateList = async () => {
 const showSetCateBtn = async () => {
   getParentCateList()
   setCateDialogVisible.value = true
+}
+
+// 删除分类
+const deleteCate = (id) => {
+  ElMessageBox.confirm(
+    '是否删除该分类?',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+    .then(async () => {
+      const { data: res } = await api.delete('categories/' + id)
+      if (res.meta.status !== 200) return ElMessage.error(res.meta.msg)
+      ElMessage.success(res.meta.msg)
+      getCateList()
+    })
+    .catch(() => {
+      getCateList()
+      ElMessage.info('未执行删除操作')
+    })
 }
 
 </script>
