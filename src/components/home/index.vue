@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import Bread from '@/components/bread'
+import Bread from '@/components/utility/bread'
 import { ref, shallowRef } from 'vue'
 import api from '@/axios/config'
 import {

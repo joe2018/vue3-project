@@ -6,6 +6,10 @@ import Users from '../views/user/users.vue'
 import Rights from '../views/power/Rights'
 import Roles from '../views/power/Roles'
 import Categories from '../views/goods/Cate'
+import Params from '../views/goods/Params'
+import Goods from '../views/goods/Goods'
+import Orders from '../views/orders/Orders'
+import Reports from '../views/reports/Reports'
 
 const routes = [
   {
@@ -49,6 +53,26 @@ const routes = [
         path: '/categories',
         component: Categories,
         meta: { title: '商品分类' }
+      },
+      {
+        path: '/params',
+        component: Params,
+        meta: { title: '分类参数' }
+      },
+      {
+        path: '/goods',
+        component: Goods,
+        meta: { title: '商品列表' }
+      },
+      {
+        path: '/orders',
+        component: Orders,
+        meta: { title: '订单列表' }
+      },
+      {
+        path: '/reports',
+        component: Reports,
+        meta: { title: '数据报表' }
       }
     ]
   }
