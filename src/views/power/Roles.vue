@@ -119,9 +119,9 @@
 </template>
 
 <script setup>
-import { CaretRight, Edit, Delete, Setting } from '@element-plus/icons'
 import { ref, onBeforeMount, reactive } from 'vue'
 import api from '@/axios/config'
+const { CaretRight, Edit, Delete, Setting } = require('@element-plus/icons')
 
 const { ElMessage, ElMessageBox } = require('element-plus')
 const rolesList = ref()
