@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@element-plus/icons": "^0.0.11",
+
     "@element-plus/icons-vue": "^1.1.4",
+
     "babel-eslint": "^10.1.0",
     "cnpm": "^7.1.1",
     "core-js": "^3.22.4",
